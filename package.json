@@ -1,0 +1,38 @@
+{
+  "name": "encryption-tool",
+  "version": "1.0.0",
+  "description": "Complete encryption/decryption tool for messages and files from URLs",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/cli.js",
+    "server": "node src/server.js",
+    "dev": "nodemon src/server.js",
+    "test": "jest --coverage",
+    "web": "http-server public -p 3001"
+  },
+  "keywords": [
+    "encryption",
+    "decryption",
+    "aes",
+    "url",
+    "cli",
+    "api"
+  ],
+  "author": "xzarq66",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^1.6.0",
+    "express": "^4.18.2",
+    "body-parser": "^1.20.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.0.3",
+    "chalk": "^4.1.2",
+    "commander": "^11.0.0",
+    "multer": "^1.4.5-lts.1"
+  },
+  "devDependencies": {
+    "jest": "^29.5.0",
+    "nodemon": "^3.0.1",
+    "http-server": "^14.1.1"
+  }
+}

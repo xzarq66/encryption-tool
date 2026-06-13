@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🔐 Encryption Tool</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+    .container { max-width: 1200px; margin: 0 auto; }
+    header {
+      text-align: center;
+      color: white;
+      margin-bottom: 40px;
+    }
+    h1 {
+      font-size: 2.5em;
+      margin-bottom: 10px;
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+    }
+    .subtitle { font-size: 1.1em; opacity: 0.9; }
+    .tabs {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .tab-button {
+      padding: 12px 24px;
+      border: none;
+      background: rgba(255, 255, 255, 0.2);
+      color: white;
+      cursor: pointer;
+      border-radius: 5px;
+      font-size: 1em;
+      transition: all 0.3s ease;
+      font-weight: 500;
+    }
+    .tab-button:hover { background: rgba(255, 255, 255, 0.3); }
+    .tab-button.active {
+      background: white;
+      color: #667eea;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
+    .content { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 20px; margin-bottom: 20px; }
+    .card {
+      background: white;
+      border-radius: 10px;
+      padding: 30px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+      display: none;
+    }
+    .card.active { display: block; }
+    .card h2 { color: #667eea; margin-bottom: 20px; font-size: 1.5em; }
+    .form-group { margin-bottom: 20px; }
+    label { display: block; margin-bottom: 8px; color: #333; font-weight: 500; }
+    input, textarea { width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 5px; font-size: 1em; }
+    input:focus, textarea:focus { outline: none; border-color: #667eea; box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1); }
+    textarea { resize: vertical; min-height: 100px; font-family: 'Courier New', monospace; }
+    .button {
+      padding: 12px 24px;
+      background: #667eea;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 1em;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      width: 100%;
+    }
+    .button:hover { background: #764ba2; transform: translateY(-2px); }
+    .result { margin-top: 20px; padding: 15px; background: #f8f9fa; border-left: 4px solid #667eea; border-radius: 5px; display: none; }
+    .result.show { display: block; animation: slideIn 0.3s ease; }
+    @keyframes slideIn { from { opacity: 0; transform: translateX(-20px); } to { opacity: 1; transform: translateX(0); } }
+    .result.success { border-left-color: #28a745; background: #d4edda; }
+    .result.error { border-left-color: #dc3545; background: #f8d7da; color: #721c24; }
+    .result-text { background: white; padding: 10px; border-radius: 3px; word-break: break-all; font-family: 'Courier New', monospace; font-size: 0.9em; max-height: 200px; overflow-y: auto; }
+    .copy-button { margin-top: 10px; padding: 8px 16px; background: #667eea; color: white; border: none; border-radius: 3px; cursor: pointer; font-size: 0.9em; }
+    .footer { text-align: center; color: white; margin-top: 40px; opacity: 0.8; }
+    @media (max-width: 768px) {
+      h1 { font-size: 1.8em; }
+      .content { grid-template-columns: 1fr; }
+      .tabs { flex-direction: column; }
+      .tab-button { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>🔐 Encryption Tool</h1>
+      <p class="subtitle">Secure encryption and decryption for messages and files</p>
+    </header>
+
+    <div class="tabs">
+      <button class="tab-button active" onclick="showTab('generate')">Generate Key</button>
+      <button class="tab-button" onclick="showTab('encrypt-text')">Encrypt Text</button>
+      <button class="tab-button" onclick="showTab('decrypt-text')">Decrypt Text</button>
+      <button class="tab-button" onclick="showTab('encrypt-url')">Encrypt URL</button>
+      <button class="tab-button" onclick="showTab('encrypt-file')">Encrypt File</button>
+    </div>
+
+    <div id="generate" class="card active">
+      <h2>Generate Key</h2>
+      <button class="button" onclick="generateKey()">Generate New Key</button>
+      <div id="generateResult" class="result"></div>
+    </div>
+
+    <div id="encrypt-text" class="card">
+      <h2>Encrypt Text</h2>
+      <div class="form-group">
+        <label>Plain Text:</label>
+        <textarea id="plainText" placeholder="Enter text to encrypt..."></textarea>
+      </div>
+      <div class="form-group">
+        <label>Key:</label>
+        <input type="password" id="encryptKey" placeholder="Enter encryption key...">
+      </div>
+      <button class="button" onclick="encryptTextMessage()">Encrypt</button>
+      <div id="encryptTextResult" class="result"></div>
+    </div>
+
+    <div id="decrypt-text" class="card">
+      <h2>Decrypt Text</h2>
+      <div class="form-group">
+        <label>Encrypted Data:</label>
+        <textarea id="encryptedText" placeholder="Paste encrypted data..."></textarea>
+      </div>
+      <div class="form-group">
+        <label>Key:</label>
+        <input type="password" id="decryptKey" placeholder="Enter decryption key...">
+      </div>
+      <button class="button" onclick="decryptTextMessage()">Decrypt</button>
+      <div id="decryptTextResult" class="result"></div>
+    </div>
+
+    <div id="encrypt-url" class="card">
+      <h2>Encrypt from URL</h2>
+      <div class="form-group">
+        <label>URL:</label>
+        <input type="url" id="urlInput" placeholder="https://example.com/file.txt">
+      </div>
+      <div class="form-group">
+        <label>Key:</label>
+        <input type="password" id="urlEncryptKey" placeholder="Enter encryption key...">
+      </div>
+      <button class="button" onclick="encryptUrl()">Fetch & Encrypt</button>
+      <div id="encryptUrlResult" class="result"></div>
+    </div>
+
+    <div id="encrypt-file" class="card">
+      <h2>Encrypt File</h2>
+      <div class="form-group">
+        <label>File:</label>
+        <input type="file" id="fileInput">
+      </div>
+      <div class="form-group">
+        <label>Key:</label>
+        <input type="password" id="fileEncryptKey" placeholder="Enter encryption key...">
+      </div>
+      <button class="button" onclick="encryptFile()">Encrypt File</button>
+      <div id="encryptFileResult" class="result"></div>
+    </div>
+
+    <div class="footer">
+      <p>✓ AES-256-CBC | ✓ Secure | ✓ Fast</p>
+      <p>v1.0.0</p>
+    </div>
+  </div>
+
+  <script>
+    const API = 'http://localhost:3000/api';
+
+    function showTab(tab) {
+      document.querySelectorAll('.card').forEach(c => c.classList.remove('active'));
+      document.querySelectorAll('.tab-button').forEach(b => b.classList.remove('active'));
+      document.getElementById(tab).classList.add('active');
+      event.target.classList.add('active');
+    }
+
+    async function generateKey() {
+      try {
+        const res = await fetch(`${API}/generate-key`);
+        const data = await res.json();
+        if (data.success) {
+          showResult('generateResult', `<h3>✓ Key Generated</h3><p><strong>Hex:</strong></p><div class="result-text">${data.key.hex}</div><button class="copy-button" onclick="copy('${data.key.hex}')">Copy</button>`, 'success');
+        }
+      } catch (e) {
+        showResult('generateResult', `Error: ${e.message}`, 'error');
+      }
+    }
+
+    async function encryptTextMessage() {
+      const text = document.getElementById('plainText').value;
+      const key = document.getElementById('encryptKey').value;
+      if (!text || !key) {
+        showResult('encryptTextResult', 'Fill all fields', 'error');
+        return;
+      }
+      try {
+        const res = await fetch(`${API}/encrypt-text`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text, key })
+        });
+        const data = await res.json();
+        if (data.success) {
+          showResult('encryptTextResult', `<h3>✓ Encrypted</h3><div class="result-text">${data.encrypted}</div><button class="copy-button" onclick="copy('${data.encrypted}')">Copy</button>`, 'success');
+        }
+      } catch (e) {
+        showResult('encryptTextResult', `Error: ${e.message}`, 'error');
+      }
+    }
+
+    async function decryptTextMessage() {
+      const encryptedData = document.getElementById('encryptedText').value;
+      const key = document.getElementById('decryptKey').value;
+      if (!encryptedData || !key) {
+        showResult('decryptTextResult', 'Fill all fields', 'error');
+        return;
+      }
+      try {
+        const res = await fetch(`${API}/decrypt-text`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ encryptedData, key })
+        });
+        const data = await res.json();
+        if (data.success) {
+          showResult('decryptTextResult', `<h3>✓ Decrypted</h3><div class="result-text">${data.decrypted}</div>`, 'success');
+        }
+      } catch (e) {
+        showResult('decryptTextResult', `Error: ${e.message}`, 'error');
+      }
+    }
+
+    async function encryptUrl() {
+      const url = document.getElementById('urlInput').value;
+      const key = document.getElementById('urlEncryptKey').value;
+      if (!url || !key) {
+        showResult('encryptUrlResult', 'Fill all fields', 'error');
+        return;
+      }
+      try {
+        const res = await fetch(`${API}/encrypt-url`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url, key })
+        });
+        const data = await res.json();
+        if (data.success) {
+          showResult('encryptUrlResult', `<h3>✓ URL Encrypted</h3><div class="result-text">${data.encrypted}</div><button class="copy-button" onclick="copy('${data.encrypted}')">Copy</button>`, 'success');
+        }
+      } catch (e) {
+        showResult('encryptUrlResult', `Error: ${e.message}`, 'error');
+      }
+    }
+
+    async function encryptFile() {
+      const file = document.getElementById('fileInput').files[0];
+      const key = document.getElementById('fileEncryptKey').value;
+      if (!file || !key) {
+        showResult('encryptFileResult', 'Select file and key', 'error');
+        return;
+      }
+      try {
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('key', key);
+        const res = await fetch(`${API}/encrypt-file`, {
+          method: 'POST',
+          body: formData
+        });
+        const data = await res.json();
+        if (data.success) {
+          showResult('encryptFileResult', `<h3>✓ File Encrypted</h3><p>${data.filename}</p><div class="result-text">${data.encrypted}</div>`, 'success');
+        }
+      } catch (e) {
+        showResult('encryptFileResult', `Error: ${e.message}`, 'error');
+      }
+    }
+
+    function showResult(id, msg, type = 'success') {
+      const el = document.getElementById(id);
+      el.innerHTML = msg;
+      el.className = `result show ${type}`;
+    }
+
+    function copy(text) {
+      navigator.clipboard.writeText(text).then(() => alert('Copied!'));
+    }
+  </script>
+</body>
+</html>
